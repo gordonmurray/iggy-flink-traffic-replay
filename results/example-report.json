@@ -1,0 +1,43 @@
+{
+  "experiment_id": "260857829b9e4e66806e8fdbca52ed7c",
+  "passed": true,
+  "checks": {
+    "all_responses_committed": true,
+    "no_duplicate_events": true,
+    "same_requests_and_offsets": true,
+    "no_null_measurements": true,
+    "no_transport_failures": true,
+    "original_pool_failure_observed": true,
+    "fixed_server_has_no_errors": true,
+    "anomalies_reduced_at_least_80_percent": true,
+    "dispatch_lag_below_250ms": true,
+    "flink_completed_checkpoint": true,
+    "flink_did_not_restart": true
+  },
+  "metrics": {
+    "original": {
+      "rows": 400,
+      "unique_events": 400,
+      "errors": 194,
+      "anomalies": 194,
+      "transport_errors": 0,
+      "pool_timeouts": 194,
+      "health_errors": 65,
+      "latency_p95_ms": 155.33875,
+      "dispatch_lag_p95_ms": 1.5062999999999998,
+      "dispatch_lag_max_ms": 7.745
+    },
+    "replay": {
+      "rows": 400,
+      "unique_events": 400,
+      "errors": 0,
+      "anomalies": 0,
+      "transport_errors": 0,
+      "pool_timeouts": 0,
+      "health_errors": 0,
+      "latency_p95_ms": 32.4383,
+      "dispatch_lag_p95_ms": 1.7265499999999996,
+      "dispatch_lag_max_ms": 3.052
+    }
+  }
+}

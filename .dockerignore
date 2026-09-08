@@ -1,0 +1,10 @@
+.git
+.env
+.venv
+**/__pycache__
+**/target
+**/dependency-reduced-pom.xml
+results
+
+**/.ruff_cache
+**/.pytest_cache

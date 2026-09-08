@@ -1,0 +1,6 @@
+apache-iggy==0.7.0
+httpx==0.28.1
+pyiceberg[pyarrow]==0.8.1
+pyarrow==18.1.0
+duckdb==1.2.2
+pytest==8.3.5

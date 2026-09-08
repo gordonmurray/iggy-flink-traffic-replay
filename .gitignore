@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+**/target/
+**/dependency-reduced-pom.xml
+.pytest_cache/
+/results/*
+!/results/.gitkeep
+!/results/example-report.json
+!/results/example-report.md
+
+.ruff_cache/

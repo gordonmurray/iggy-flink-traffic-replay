@@ -1,0 +1,150 @@
+name: iggy-flink-traffic-replay
+
+services:
+  iggy:
+    image: apache/iggy:0.7.0
+    command: ["--with-default-root-credentials"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      IGGY_TCP_ADDRESS: 0.0.0.0:8090
+      IGGY_HTTP_ADDRESS: 0.0.0.0:3000
+    volumes:
+      - iggy_data:/app/local_data
+    mem_limit: 512m
+
+  web-v1:
+    build: ./web-server
+    environment:
+      BUGGY: "true"
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/ready', timeout=2)"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  web-v2:
+    build: ./web-server
+    environment:
+      BUGGY: "false"
+    mem_limit: 128m
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/ready', timeout=2)"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: demo-admin
+      MINIO_ROOT_PASSWORD: demo-password
+    volumes:
+      - minio_data:/data
+    mem_limit: 384m
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/live"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  minio-init:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-ec", "mc alias set local http://minio:9000 demo-admin demo-password; mc mb --ignore-existing local/warehouse"]
+
+  iceberg-rest:
+    build: ./iceberg
+    image: iggy-flink-traffic-replay-catalog:local
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      AWS_ACCESS_KEY_ID: demo-admin
+      AWS_SECRET_ACCESS_KEY: demo-password
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+      CATALOG_URI: jdbc:sqlite:/catalog/catalog.db
+    volumes:
+      - catalog_data:/catalog
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/8181'"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+
+  flink-jobmanager:
+    image: iggy-flink-traffic-replay-flink:local
+    build:
+      context: .
+      dockerfile: flink-job/Dockerfile
+      target: flink
+    command: jobmanager
+    ports:
+      - "127.0.0.1:${FLINK_UI_PORT:-8081}:8081"
+    environment:
+      AWS_REGION: us-east-1
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        jobmanager.memory.process.size: 1024m
+        rest.bind-address: 0.0.0.0
+    mem_limit: 1280m
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/overview"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+
+  flink-taskmanager:
+    image: iggy-flink-traffic-replay-flink:local
+    command: taskmanager
+    depends_on:
+      flink-jobmanager:
+        condition: service_healthy
+    environment:
+      AWS_REGION: us-east-1
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: flink-jobmanager
+        taskmanager.numberOfTaskSlots: 1
+        taskmanager.memory.process.size: 1536m
+    mem_limit: 1792m
+
+  demo:
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: flink-job/Dockerfile
+      target: demo
+    depends_on:
+      iggy:
+        condition: service_started
+      web-v1:
+        condition: service_healthy
+      web-v2:
+        condition: service_healthy
+      iceberg-rest:
+        condition: service_healthy
+      flink-taskmanager:
+        condition: service_started
+    environment:
+      REQUEST_COUNT: "${REQUEST_COUNT:-400}"
+      TRAFFIC_RATE_RPS: "${TRAFFIC_RATE_RPS:-40}"
+      TRAFFIC_SEED: "${TRAFFIC_SEED:-42}"
+      AWS_REGION: us-east-1
+    volumes:
+      - ./results:/results
+    mem_limit: 768m
+
+volumes:
+  iggy_data:
+  minio_data:
+  catalog_data:

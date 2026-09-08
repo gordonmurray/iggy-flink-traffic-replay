@@ -1,0 +1,38 @@
+name: End-to-end example
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: replay-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  example:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and unit tests
+        run: make test
+      - name: First experiment
+        run: make run
+      - name: Repeat with retained data
+        run: make run
+      - name: Read committed results after container replacement
+        run: |
+          make down
+          docker compose up -d --wait iggy web-v1 web-v2 minio iceberg-rest flink-jobmanager flink-taskmanager
+          make report
+      - name: Collect service logs
+        if: always()
+        run: docker compose logs --no-color > results/services.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: replay-results
+          path: results/
+      - name: Stop services
+        if: always()
+        run: make down
