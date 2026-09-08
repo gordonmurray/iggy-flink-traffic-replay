@@ -1,6 +1,6 @@
 # Replay results
 
-Experiment: `260857829b9e4e66806e8fdbca52ed7c`
+Experiment: `601a6c3a057a401d97d458e18ceda552`
 
 | Check | Result |
 |---|---|
@@ -25,6 +25,6 @@ Experiment: `260857829b9e4e66806e8fdbca52ed7c`
 | transport_errors | 0 | 0 |
 | pool_timeouts | 194 | 0 |
 | health_errors | 65 | 0 |
-| latency_p95_ms | 155.339 | 32.438 |
-| dispatch_lag_p95_ms | 1.506 | 1.727 |
-| dispatch_lag_max_ms | 7.745 | 3.052 |
+| latency_p95_ms | 155.515 | 31.988 |
+| dispatch_lag_p95_ms | 1.521 | 1.778 |
+| dispatch_lag_max_ms | 7.553 | 3.337 |

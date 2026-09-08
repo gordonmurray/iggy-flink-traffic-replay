@@ -7,6 +7,23 @@ The first version leaks connection-pool slots. The second version releases them.
 Apache Flink reads the measured responses from Iggy and writes them to Apache Iceberg on MinIO.
 A DuckDB report compares the committed results and returns a nonzero exit code if any acceptance check fails.
 
+## See the result
+
+[![Watch the Iggy and Flink traffic replay demo](https://asciinema.org/a/2Uw417VnaQt7Js5Y.svg)](https://asciinema.org/a/2Uw417VnaQt7Js5Y)
+
+Select the preview to play the recording. It shows a real capture, replay, and retained-results check.
+Images are prebuilt and services are running. Playback shortens idle waits.
+
+The recorded run produced the following results. Timing varies with the host.
+The complete measured output is in [results/example-report.md](results/example-report.md).
+
+| Metric | Original | Replay |
+|---|---:|---:|
+| Committed responses | 400 | 400 |
+| HTTP errors | 194 | 0 |
+| Failed health requests | 65 | 0 |
+| p95 response latency | 155.515 ms | 31.988 ms |
+
 ## Run the example
 
 Requirements:
@@ -88,16 +105,6 @@ It is a rule for this example, not a statistical detector.
 - At least an 80% reduction in anomalies.
 - A maximum dispatch delay below 250 ms in both runs.
 - At least one completed Flink checkpoint and no Flink restarts during the experiment.
-
-A real local run produced the following results. Timing varies with the host.
-The complete measured output is in [results/example-report.md](results/example-report.md).
-
-| Metric | Original | Replay |
-|---|---:|---:|
-| Committed responses | 400 | 400 |
-| HTTP errors | 194 | 0 |
-| Failed health requests | 65 | 0 |
-| p95 response latency | 155.339 ms | 32.438 ms |
 
 ## Repeat runs and retained data
 

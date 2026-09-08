@@ -1,5 +1,5 @@
 {
-  "experiment_id": "260857829b9e4e66806e8fdbca52ed7c",
+  "experiment_id": "601a6c3a057a401d97d458e18ceda552",
   "passed": true,
   "checks": {
     "all_responses_committed": true,
@@ -23,9 +23,9 @@
       "transport_errors": 0,
       "pool_timeouts": 194,
       "health_errors": 65,
-      "latency_p95_ms": 155.33875,
-      "dispatch_lag_p95_ms": 1.5062999999999998,
-      "dispatch_lag_max_ms": 7.745
+      "latency_p95_ms": 155.51510000000002,
+      "dispatch_lag_p95_ms": 1.521049999999998,
+      "dispatch_lag_max_ms": 7.553
     },
     "replay": {
       "rows": 400,
@@ -35,9 +35,9 @@
       "transport_errors": 0,
       "pool_timeouts": 0,
       "health_errors": 0,
-      "latency_p95_ms": 32.4383,
-      "dispatch_lag_p95_ms": 1.7265499999999996,
-      "dispatch_lag_max_ms": 3.052
+      "latency_p95_ms": 31.98775,
+      "dispatch_lag_p95_ms": 1.7776999999999992,
+      "dispatch_lag_max_ms": 3.337
     }
   }
 }
